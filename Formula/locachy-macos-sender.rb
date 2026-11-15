@@ -2,8 +2,8 @@ class LocachyMacosSender < Formula
   desc "Extended display sender for the LOCachy receiver"
   homepage "https://github.com/niuyuanzhao/locachy-companion"
   url "https://github.com/niuyuanzhao/locachy-companion.git",
-      revision: "37c0ef325f92ea84c88dc29b115362d29f58e042"
-  version "0.4.0"
+      revision: "f53292e6a8622b276dd8ed4efa1c6c333f3c7aaa"
+  version "0.4.1"
   license "GPL-3.0-or-later"
   head "https://github.com/niuyuanzhao/locachy-companion.git", branch: "main"
 
@@ -39,7 +39,7 @@ class LocachyMacosSender < Formula
   end
 
   service do
-    run [opt_prefix/"LOCachy Extended Display.app/Contents/MacOS/locachy-macos-sender"]
+    run [var/"locachy/LOCachy Extended Display.app/Contents/MacOS/locachy-macos-sender"]
     keep_alive true
     process_type :interactive
     log_path var/"log/locachy-macos-sender.log"
