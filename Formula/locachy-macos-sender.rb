@@ -2,8 +2,8 @@ class LocachyMacosSender < Formula
   desc "Extended display sender for the LOCachy receiver"
   homepage "https://github.com/niuyuanzhao/locachy-companion"
   url "https://github.com/niuyuanzhao/locachy-companion.git",
-      revision: "f8f203e29879b3a52f1b5f4773a59b86baa2c280"
-  version "0.3.0"
+      revision: "37c0ef325f92ea84c88dc29b115362d29f58e042"
+  version "0.4.0"
   license "GPL-3.0-or-later"
   head "https://github.com/niuyuanzhao/locachy-companion.git", branch: "main"
 
@@ -25,14 +25,32 @@ class LocachyMacosSender < Formula
        out/"opendisplay-0f44853adc5d44646a9e4d74e4516db460efb8bb.tar.gz"
     system "sh", "extdisplay-sender/macos/build.sh", out
     bin.install out/"locachy-macos-sender"
+    prefix.install out/"LOCachy Extended Display.app"
+    pkgshare.install "extdisplay-sender/macos/build.sh"
+  end
+
+  def post_install
+    (var/"locachy").mkpath
+    (var/"log").mkpath
+    system "sh", pkgshare/"build.sh", "--sign",
+           bin/"locachy-macos-sender",
+           prefix/"LOCachy Extended Display.app",
+           var/"locachy"
+  end
+
+  service do
+    run [opt_prefix/"LOCachy Extended Display.app/Contents/MacOS/locachy-macos-sender"]
+    keep_alive true
+    process_type :interactive
+    log_path var/"log/locachy-macos-sender.log"
+    error_log_path var/"log/locachy-macos-sender.log"
   end
 
   def caveats
     <<~EOS
-      Before the first session, grant Screen Recording and Accessibility in
-      System Settings > Privacy & Security to locachy-macos-sender, or to the
-      terminal app that starts it, then start it again. The sender never asks
-      for these permissions itself. macOS may also ask for Local Network access.
+      Start the background service with:
+        brew services start locachy-macos-sender
+      Grant Screen Recording and Accessibility once in System Settings > Privacy & Security.
     EOS
   end
 
