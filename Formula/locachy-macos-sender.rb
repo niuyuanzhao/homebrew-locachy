@@ -2,8 +2,8 @@ class LocachyMacosSender < Formula
   desc "Extended display sender for the LOCachy receiver"
   homepage "https://github.com/niuyuanzhao/locachy-companion"
   url "https://github.com/niuyuanzhao/locachy-companion.git",
-      revision: "f6dce69ac34affb566404795ff47fc0d3998d37a"
-  version "0.4.3"
+      revision: "34bce9644fb95369d84841c9924dbab5e5a79a04"
+  version "0.4.4"
   license "GPL-3.0-or-later"
   head "https://github.com/niuyuanzhao/locachy-companion.git", branch: "main"
 
