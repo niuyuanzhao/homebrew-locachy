@@ -2,8 +2,8 @@ class LocachyMacosSender < Formula
   desc "Extended display sender for the LOCachy receiver"
   homepage "https://github.com/niuyuanzhao/locachy-companion"
   url "https://github.com/niuyuanzhao/locachy-companion.git",
-      revision: "3647e352bccd77a0ad709cc6456b3d4bffbb17d2"
-  version "0.4.6"
+      revision: "d42f0b2ec2b87983a66b1f9055fe853dc2bf3b89"
+  version "0.5.0"
   license "GPL-3.0-or-later"
   head "https://github.com/niuyuanzhao/locachy-companion.git", branch: "main"
 
@@ -25,8 +25,11 @@ class LocachyMacosSender < Formula
        out/"opendisplay-0f44853adc5d44646a9e4d74e4516db460efb8bb.tar.gz"
     system "sh", "extdisplay-sender/macos/build.sh", out
     bin.install out/"locachy-macos-sender"
+    libexec.install out/"locachy-hid-helper"
     prefix.install out/"LOCachy Extended Display.app"
     pkgshare.install "extdisplay-sender/macos/build.sh"
+    pkgshare.install "extdisplay-sender/macos/org.locachy.hid-helper.plist"
+    pkgshare.install "extdisplay-sender/macos/org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon.plist"
   end
 
   def post_install
@@ -35,7 +38,8 @@ class LocachyMacosSender < Formula
     system "sh", pkgshare/"build.sh", "--sign",
            bin/"locachy-macos-sender",
            prefix/"LOCachy Extended Display.app",
-           var/"locachy"
+           var/"locachy",
+           libexec/"locachy-hid-helper"
   end
 
   service do
@@ -51,11 +55,15 @@ class LocachyMacosSender < Formula
       Start the background service with:
         brew services start locachy-macos-sender
       Grant Screen Recording and Accessibility once in System Settings > Privacy & Security.
+      For kernel-level virtual USB keyboard passthrough, also install the managed Cask:
+        brew install --cask niuyuanzhao/locachy/locachy-virtual-hid
     EOS
   end
 
   test do
     assert_match "CGVirtualDisplay classes are present",
                  shell_output("#{bin}/locachy-macos-sender --check")
+    assert_match "locachy-hid-helper ready",
+                 shell_output("#{libexec}/locachy-hid-helper --check")
   end
 end
