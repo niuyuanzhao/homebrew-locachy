@@ -7,15 +7,15 @@ cask "karabiner-driverkit-virtualhiddevice" do
   desc "Virtual USB HID keyboard and pointing device DriverKit extension"
   homepage "https://github.com/pqrs-org/Karabiner-DriverKit-VirtualHIDDevice"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
 
   pkg "Karabiner-DriverKit-VirtualHIDDevice-#{version}.pkg"
 
-  postflight do
+  postflight_steps do
     # Request DriverKit system extension activation (idempotent if already active).
-    system_command "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager",
-                   args:       ["activate"],
-                   must_succeed: false
+    run "/Applications/.Karabiner-VirtualHIDDevice-Manager.app/Contents/MacOS/Karabiner-VirtualHIDDevice-Manager",
+        args:         ["activate"],
+        must_succeed: false
   end
 
   uninstall launchctl: "org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon",

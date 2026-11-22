@@ -9,39 +9,40 @@ cask "locachy-virtual-hid" do
   desc "Root LaunchDaemon bridge connecting LOCachy Extended Display to Karabiner DriverKit virtual USB keyboard"
   homepage "https://github.com/niuyuanzhao/locachy-companion"
 
-  depends_on macos: ">= :sonoma"
+  depends_on macos: :sonoma
   depends_on cask: "niuyuanzhao/locachy/karabiner-driverkit-virtualhiddevice"
   depends_on formula: "niuyuanzhao/locachy/locachy-macos-sender"
 
-  postflight do
-    formula = Formula["niuyuanzhao/locachy/locachy-macos-sender"]
-    helper_src = formula.opt_libexec/"locachy-hid-helper"
-    helper_plist_src = formula.opt_pkgshare/"org.locachy.hid-helper.plist"
-    karabiner_plist_src = formula.opt_pkgshare/"org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon.plist"
-
+  postflight_steps do
     support_dir = "/Library/Application Support/LOCachy"
     helper_dst = "#{support_dir}/locachy-hid-helper"
     helper_plist_dst = "/Library/LaunchDaemons/org.locachy.hid-helper.plist"
     karabiner_plist_dst = "/Library/LaunchDaemons/org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon.plist"
 
-    system_command "/bin/mkdir", args: ["-p", support_dir], sudo: true
-    system_command "/usr/sbin/chown", args: ["root:wheel", support_dir], sudo: true
-    system_command "/bin/chmod", args: ["0755", support_dir], sudo: true
+    run "/bin/mkdir", args: ["-p", support_dir], sudo: true
+    run "/usr/sbin/chown", args: ["root:wheel", support_dir], sudo: true
+    run "/bin/chmod", args: ["0755", support_dir], sudo: true
 
-    # Install root-owned helper binary atomically so launchd always runs a signed root binary.
-    system_command "/usr/bin/install", args: ["-o", "root", "-g", "wheel", "-m", "0755", helper_src.to_s, helper_dst], sudo: true
-    system_command "/usr/bin/install", args: ["-o", "root", "-g", "wheel", "-m", "0644", karabiner_plist_src.to_s, karabiner_plist_dst], sudo: true
-    system_command "/usr/bin/install", args: ["-o", "root", "-g", "wheel", "-m", "0644", helper_plist_src.to_s, helper_plist_dst], sudo: true
+    # Install root-owned helper binary and plists atomically from formula opt prefix.
+    run "/usr/bin/install",
+        args: ["-o", "root", "-g", "wheel", "-m", "0755", "{{HOMEBREW_PREFIX}}/opt/locachy-macos-sender/libexec/locachy-hid-helper", helper_dst],
+        sudo: true
+    run "/usr/bin/install",
+        args: ["-o", "root", "-g", "wheel", "-m", "0644", "{{HOMEBREW_PREFIX}}/opt/locachy-macos-sender/share/locachy-macos-sender/org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon.plist", karabiner_plist_dst],
+        sudo: true
+    run "/usr/bin/install",
+        args: ["-o", "root", "-g", "wheel", "-m", "0644", "{{HOMEBREW_PREFIX}}/opt/locachy-macos-sender/share/locachy-macos-sender/org.locachy.hid-helper.plist", helper_plist_dst],
+        sudo: true
 
     # Ensure Karabiner VirtualHIDDevice Daemon is running.
-    system_command "/bin/launchctl", args: ["bootout", "system", karabiner_plist_dst], sudo: true, must_succeed: false
-    system_command "/bin/launchctl", args: ["bootstrap", "system", karabiner_plist_dst], sudo: true
-    system_command "/bin/launchctl", args: ["kickstart", "-k", "system/org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon"], sudo: true, must_succeed: false
+    run "/bin/launchctl", args: ["bootout", "system", karabiner_plist_dst], sudo: true, must_succeed: false
+    run "/bin/launchctl", args: ["bootstrap", "system", karabiner_plist_dst], sudo: true
+    run "/bin/launchctl", args: ["kickstart", "-k", "system/org.pqrs.service.daemon.Karabiner-VirtualHIDDevice-Daemon"], sudo: true, must_succeed: false
 
     # Ensure LOCachy root HID helper is running.
-    system_command "/bin/launchctl", args: ["bootout", "system", helper_plist_dst], sudo: true, must_succeed: false
-    system_command "/bin/launchctl", args: ["bootstrap", "system", helper_plist_dst], sudo: true
-    system_command "/bin/launchctl", args: ["kickstart", "-k", "system/org.locachy.hid-helper"], sudo: true, must_succeed: false
+    run "/bin/launchctl", args: ["bootout", "system", helper_plist_dst], sudo: true, must_succeed: false
+    run "/bin/launchctl", args: ["bootstrap", "system", helper_plist_dst], sudo: true
+    run "/bin/launchctl", args: ["kickstart", "-k", "system/org.locachy.hid-helper"], sudo: true, must_succeed: false
   end
 
   uninstall launchctl: [
